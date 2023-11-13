@@ -1,0 +1,30 @@
+{
+  "canisters": {
+    "smart_farm_backend": {
+      "candid": "src/smart_farm_backend/smart_farm_backend.did",
+      "package": "smart_farm_backend",
+      "type": "rust"
+    },
+    "smart_farm_frontend": {
+      "dependencies": [
+        "smart_farm_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/smart_farm_frontend/src/index.html"
+      },
+      "source": [
+        "src/smart_farm_frontend/assets",
+        "dist/smart_farm_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
