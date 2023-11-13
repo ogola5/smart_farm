@@ -1,62 +1,74 @@
-# smart_farm
+# Smart Farm System
 
-Welcome to your new smart_farm project and to the internet computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+This is a Rust implementation of a Smart Farm System, designed to handle various aspects of smart farming, including tracking crops, tasks, expenses, and providing functionalities such as creating, updating, and querying crop-related information.
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+## Technologies Used
 
-To learn more before you start working with smart_farm, see the following documentation available online:
+- **Rust**: The programming language used for the backend implementation.
+- **Candid**: Used for defining the canister interface.
+- **Internet Computer (IC)**: Utilizes IC-specific libraries (`ic_cdk`) for interactions with the Internet Computer.
 
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Rust Canister Development Guide](https://internetcomputer.org/docs/current/developer-docs/backend/rust/)
-- [ic-cdk](https://docs.rs/ic-cdk)
-- [ic-cdk-macros](https://docs.rs/ic-cdk-macros)
-- [Candid Introduction](https://internetcomputer.org/docs/current/developer-docs/backend/candid/)
+## Components
 
-If you want to start working on your project right away, you might want to try the following commands:
+### Data Structures
+- **Crop**: Represents information about a crop, including its name, description, quantity, and timestamps.
+- **Task**: Represents a task related to smart farming, including details like name, description, completion status, associated crop ID, and timestamps.
+- **Expense**: Represents an expense entry, with fields for description, amount, and timestamp.
 
-```bash
-cd smart_farm/
-dfx help
-dfx canister --help
-```
+### Functionality
+- **Smart Farm Management**: Create, update, and retrieve information about crops.
+- **Task Management**: Create, update, complete, and delete tasks associated with smart farming.
+- **Expense Management**: Create, update, and delete expense entries.
+- **Budget Calculation**: Calculates the budget by considering total expenses and the value of crops.
+- **Crop Rotation Recommendations**: Provides recommendations for crop rotation based on the input crop.
 
-## Running the project locally
+## Local Deployment
 
-If you want to test your project locally, you can use the following commands:
+To deploy this Smart Farm System on a local machine, follow these steps:
 
-```bash
-# Starts the replica, running in the background
-dfx start --background
+1. **Install Rust**: Ensure that Rust is installed on your machine. You can install it from [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install).
 
-# Deploys your canisters to the replica and generates your candid interface
-dfx deploy
-```
+2. **Clone the Repository**: Clone this repository to your local machine.
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+    ```bash
+    git clone https://github.com/ogola5/smart_farm.git
+    ```
 
-If you have made changes to your backend canister, you can generate a new candid interface with
+3. **Build the Project**: Navigate to the project directory and build the project.
 
-```bash
-npm run generate
-```
+    ```bash
+    cd smart_farm
+    cargo build
+    ```
 
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
+4. **Run the Project Locally**: Run the project locally using the following command.
 
-If you are making frontend changes, you can start a development server with
+    ```bash
+    cargo run
+    ```
 
-```bash
-npm start
-```
+5. **Access the Endpoints**: Once the project is running, you can access the provided endpoints for interacting with the Smart Farm System.
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+## Canister Deployment
 
-### Note on frontend environment variables
+To deploy this Smart Farm System on the Internet Computer, you need to follow the steps outlined in the Internet Computer documentation. Here is a simplified overview:
 
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
+1. **Internet Computer SDK**: Install the DFINITY Canister SDK by following the instructions at [https://sdk.dfinity.org/docs/download.html](https://sdk.dfinity.org/docs/download.html).
 
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
-# smart_farm
+2. **Start the Canister**: Build the canister using the following command:
+
+    ```bash
+    dfx start
+    ```
+
+3. **Deploy the Canister**: Deploy the canister to the Internet Computer.
+
+    ```bash
+    dfx deploy
+    ```
+
+4. **Interact with the Canister**: Once deployed, you can interact with the canister using the generated canister ID.
+
+    ```bash
+    dfx canister call <canister-id> <function-name>
+    ```
