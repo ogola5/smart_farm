@@ -1,3 +1,55 @@
+type Crop = record {
+  id : nat64;
+  updated_at : opt nat64;
+  name : text;
+  description : text;
+  created_at : nat64;
+  quantity : nat32;
+};
+type CropPayload = record { name : text; description : text; quantity : nat32 };
+type Error = variant { NotFound : record { msg : text } };
+type Expense = record {
+  id : nat64;
+  description : text;
+  timestamp : nat64;
+  amount : float64;
+};
+type ExpensePayload = record { description : text; amount : float64 };
+type Result = variant { Ok : float64; Err : Error };
+type Result_1 = variant { Ok : Task; Err : Error };
+type Result_2 = variant { Ok : vec text; Err : Error };
+type Result_3 = variant { Ok : Expense; Err : Error };
+type Result_4 = variant { Ok : text; Err : Error };
+type Result_5 = variant { Ok : vec Crop; Err : Error };
+type Result_6 = variant { Ok : vec Expense; Err : Error };
+type Result_7 = variant { Ok : vec Task; Err : Error };
+type Result_8 = variant { Ok : Crop; Err : Error };
+type Task = record {
+  id : nat64;
+  name : text;
+  completed : bool;
+  description : text;
+  created_at : nat64;
+  crop_id : nat64;
+};
+type TaskPayload = record { name : text; description : text; crop_id : nat64 };
 service : {
-    "greet": (text) -> (text) query;
+  calculate_budget : () -> (Result) query;
+  complete_task : (nat64) -> (Result_1);
+  create_crop : (CropPayload) -> (opt Crop);
+  create_expense : (ExpensePayload) -> (opt Expense);
+  create_task : (TaskPayload) -> (opt Task);
+  crop_rotation_recommendations : (text) -> (Result_2) query;
+  delete_expense : (nat64) -> (Result_3);
+  delete_task : (nat64) -> (Result_1);
+  generate_crop_report : (nat64) -> (Result_4) query;
+  get_all_crops : () -> (Result_5) query;
+  get_all_expenses : () -> (Result_6) query;
+  get_all_tasks : () -> (Result_7) query;
+  get_crop : (nat64) -> (Result_8) query;
+  get_expense : (nat64) -> (Result_3) query;
+  get_task : (nat64) -> (Result_1) query;
+  update_crop : (nat64, CropPayload) -> (Result_8);
+  update_expense : (nat64, ExpensePayload) -> (Result_3);
+  update_task : (nat64, TaskPayload) -> (Result_1);
 }

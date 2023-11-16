@@ -34,20 +34,60 @@ To deploy this Smart Farm System on a local machine, follow these steps:
     git clone https://github.com/ogola5/smart_farm.git
     ```
 
-3. **Build the Project**: Navigate to the project directory and build the project.
+3. **Install Dependencies**: Navigate to the project directory and install dependencies.
 
     ```bash
     cd smart_farm
-    cargo build
+    npm install
     ```
 
 4. **Run the Project Locally**: Run the project locally using the following command.
 
-    ```bash
-    cargo run
-    ```
+```bash
+# Starts the replica, running in the background
+dfx start --background
+
+# Deploys your canisters to the replica and generates your candid interface
+dfx deploy
+```
 
 5. **Access the Endpoints**: Once the project is running, you can access the provided endpoints for interacting with the Smart Farm System.
+
+
+If you have made changes to your backend canister, you can generate a new candid interface with
+
+```bash
+# This runs "generate": "./did.sh && dfx generate",
+
+npm run generate
+```
+This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
+also to run dfx generate and dfx deploy simultaneously you can opt for running 
+
+```bash
+# This runs "gen-deploy":"./did.sh && dfx generate && dfx deploy -y"
+
+npm run gen-deploy
+```
+If you are making frontend changes, you can start a development server with
+
+```bash
+npm start
+```
+
+if by any chance that you get error as :
+
+note: to keep the current resolver, specify `workspace.resolver = "1"` in the workspace root's manifest
+note: to use the edition 2021 resolver, specify `workspace.resolver = "2"` in the workspace root's manifest
+
+
+you can fix it by following the instruction and adding the `resolver ="2"` to the workspace root's manifest it is in the file `Cargo.toml` eg:
+
+        [workspace]
+        members = [
+            "src/smart_farm_backend",
+        ]
+        resolver="2"
 
 ## Canister Deployment
 
