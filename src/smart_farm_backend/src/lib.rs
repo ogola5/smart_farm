@@ -65,6 +65,7 @@ struct Expense {
     description: String,
     amount: f64,
     timestamp: u64,
+    crop_id: u64, 
 }
 
 impl Storable for Expense {
@@ -126,6 +127,7 @@ struct TaskPayload {
 struct ExpensePayload {
     description: String,
     amount: f64,
+    crop_id: u64,
 }
 
 #[ic_cdk::query]
@@ -357,10 +359,12 @@ fn create_expense(payload: ExpensePayload) -> Option<Expense> {
         description: payload.description,
         amount: payload.amount,
         timestamp: time(),
+        crop_id: payload.crop_id,  // Use the crop_id from the payload
     };
     do_insert_expense(&expense);
     Some(expense)
 }
+
 
 fn do_insert_expense(expense: &Expense) {
     EXPENSES.with(|service| service.borrow_mut().insert(expense.id, expense.clone()));
@@ -426,6 +430,110 @@ fn load_crop_rotation_data() -> HashMap<String, Vec<String>> {
     data.insert("soybean".to_string(), vec!["corn".to_string(), "wheat".to_string()]);
     data
 }
+
+#[ic_cdk::query]
+fn search_crops(query: String, min_quantity: Option<u32>, date_range: Option<(u64, u64)>) -> Result<Vec<Crop>, Error> {
+    let lower_case_query = query.to_lowercase();
+    let filtered_crops = CROP_STORAGE.with(|storage| {
+        storage.borrow()
+            .iter()
+            .filter(|(_, crop)| {
+                crop.name.to_lowercase().contains(&lower_case_query) &&
+                min_quantity.map_or(true, |min| crop.quantity >= min) &&
+                date_range.map_or(true, |(start, end)| crop.created_at >= start && crop.created_at <= end)
+            })
+            .map(|(_, crop)| crop.clone())
+            .collect::<Vec<Crop>>()
+    });
+
+    if filtered_crops.is_empty() {
+        Err(Error::NotFound {
+            msg: "No matching crops found.".to_string(),
+        })
+    } else {
+        Ok(filtered_crops)
+    }
+}
+
+
+#[ic_cdk::query]
+fn predict_crop_yield(crop_id: u64) -> Result<u64, Error> {
+    match _get_crop(&crop_id) {
+        Some(crop) => {
+            // Convert the quantity to u64 before multiplying
+            let quantity_u64: u64 = crop.quantity.into();
+            let predicted_yield = quantity_u64 * 2; // Example: double the current quantity
+            Ok(predicted_yield)
+        },
+        None => Err(Error::NotFound {
+            msg: format!("Crop with id={} not found.", crop_id),
+        }),
+    }
+}
+
+
+#[ic_cdk::update]
+fn auto_assign_tasks() -> Result<Vec<Task>, Error> {
+    let mut assigned_tasks = Vec::new();
+    CROP_STORAGE.with(|storage| {
+        for (_, crop) in storage.borrow().iter() {
+            if crop.name == "wheat" {
+                // Generate new ID for the task
+                let id = ID_COUNTER.with(|counter| {
+                    let current_value = *counter.borrow().get();
+                    counter.borrow_mut().set(current_value + 1);
+                    current_value + 1
+                });
+
+                let task = Task {
+                    id,
+                    name: "Watering".to_string(),
+                    description: "Water the wheat crop".to_string(),
+                    completed: false,
+                    crop_id: crop.id,
+                    created_at: time(),
+                };
+                do_insert_task(&task);
+                assigned_tasks.push(task);
+            }
+        }
+    });
+    Ok(assigned_tasks)
+}
+
+
+fn get_timestamp(month: u64, year: u64, day: u64) -> u64 {
+    // Placeholder implementation - replace with actual logic
+    year * 10000 + month * 100 + day
+}
+
+#[ic_cdk::query]
+fn monthly_expense_report(month: u64, year: u64) -> Result<f64, Error> {
+    let start_of_month = get_timestamp(month, year, 1);
+    let end_of_month = get_timestamp(if month == 12 { 1 } else { month + 1 }, if month == 12 { year + 1 } else { year }, 1);
+
+    let total_expense = EXPENSES.with(|storage| {
+        storage.borrow()
+               .iter()
+               .filter(|(_, expense)| expense.timestamp >= start_of_month && expense.timestamp < end_of_month)
+               .map(|(_, expense)| expense.amount)
+               .sum()
+    });
+    Ok(total_expense)
+}
+#[ic_cdk::query]
+fn expenses_per_crop(crop_id: u64) -> Result<f64, Error> {
+    let total_expense = EXPENSES.with(|storage| {
+        storage.borrow()
+               .iter()
+               .filter(|(_, expense)| expense.crop_id == crop_id)
+               .map(|(_, expense)| expense.amount)
+               .sum()
+    });
+    Ok(total_expense)
+}
+
+
 
 
 #[derive(candid::CandidType, Deserialize, Serialize)]
