@@ -481,8 +481,15 @@ fn auto_assign_tasks() -> Result<Vec<Task>, Error> {
                 // Generate new ID for the task
                 let id = ID_COUNTER.with(|counter| {
                     let current_value = *counter.borrow().get();
-                    counter.borrow_mut().set(current_value + 1);
-                    current_value + 1
+                    // Handling the result of set operation
+                    match counter.borrow_mut().set(current_value + 1) {
+                        Ok(_) => current_value + 1,
+                        Err(e) => {
+                            // Handle the error, e.g., log it or return a custom error
+                            eprintln!("Failed to set new ID counter value: {:?}", e);
+                            return current_value; // Or handle it another way
+                        }
+                    }
                 });
 
                 let task = Task {
@@ -500,6 +507,7 @@ fn auto_assign_tasks() -> Result<Vec<Task>, Error> {
     });
     Ok(assigned_tasks)
 }
+
 
 
 fn get_timestamp(month: u64, year: u64, day: u64) -> u64 {
